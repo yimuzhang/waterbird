@@ -5,47 +5,10 @@ import pandas as pd
 from PIL import Image
 from tqdm import tqdm
 from dataset_utils import crop_and_resize, combine_and_mask
-import matplotlib.pyplot as plt
-import resnet_model
 import torch
 import torch.nn as nn
 from torchvision import models
 
-
-class ft_net(nn.Module):
-
-    def __init__(self):
-        super(ft_net, self).__init__()
-        model_ft = models.resnet50(pretrained=True)
-        self.model = model_ft
-
-    def forward(self, x):
-        if True: # draw features or not
-            x = self.model.conv1(x)
-
-            x = self.model.bn1(x)
-
-            x = self.model.relu(x)
-
-            x = self.model.maxpool(x)
-
-            x = self.model.layer1(x)
-
-            x = self.model.layer2(x)
-
-            x = self.model.layer3(x)
-
-            x = self.model.layer4(x)
-
-            x = self.model.avgpool(x)
-
-            x = x.view(x.size(0), -1)
-            x = self.model.fc(x)
-
-        return x
-
-
-################ Paths and other configs - Set these #################################
 def generate(r_water,r_land,n_sample,cub_dir = './CUB',places_dir = './data_large'):
     #r_water: 水鸟在水环境的概率
     #r_land: 陆鸟在水环境的概率
@@ -100,7 +63,7 @@ def generate(r_water,r_land,n_sample,cub_dir = './CUB',places_dir = './data_larg
         if iswater==0:
             lb.append(species_name)
 
-    resnet50=ft_net()
+    resnet50=models.resnet50(pretrained=True)
     x=torch.zeros(n_sample,1000)
     y=torch.zeros(n_sample)
     z=torch.zeros(n_sample)
@@ -133,8 +96,6 @@ def generate(r_water,r_land,n_sample,cub_dir = './CUB',places_dir = './data_larg
         combined_img = combine_and_mask(place, seg_np, img_black)
         combined_img = torch.transpose(torch.tensor(combined_img,dtype=torch.float32),0,2)
         combined_img= torch.unsqueeze(combined_img, dim=0)
-        #combined_img = torch.reshape(combined_img,(3,-1))
-        #print(combined_img.shape)
         feature=resnet50(combined_img)
         y[i]=iswater[0]  #0: land 1: water
         z[i]=background[0] #0: land 1:water
