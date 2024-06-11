@@ -134,7 +134,7 @@ def generate(r_water,r_land,n_sample,cub_dir = './CUB',places_dir = './data_larg
         combined_img = torch.transpose(torch.tensor(combined_img,dtype=torch.float32),0,2)
         combined_img= torch.unsqueeze(combined_img, dim=0)
         #combined_img = torch.reshape(combined_img,(3,-1))
-        print(combined_img.shape)
+        #print(combined_img.shape)
         feature=resnet50(combined_img)
         y[i]=iswater[0]  #0: land 1: water
         z[i]=background[0] #0: land 1:water
