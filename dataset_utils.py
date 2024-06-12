@@ -70,6 +70,6 @@ def combine_and_mask(img_new, mask, img_black):
 
     # Combine
     img_combined_np = np.asarray(img_black) + img_masked_np
-    # img_combined = Image.fromarray(img_combined_np)
+    img_combined = Image.fromarray(img_combined_np)
 
-    return img_combined_np
+    return img_combined
