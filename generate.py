@@ -7,11 +7,13 @@ from tqdm import tqdm
 from dataset_utils import crop_and_resize, combine_and_mask
 import torch
 import torch.nn as nn
-from torchvision import models
+from torchvision import models,transforms
+import time
 
-def generate(r_water,r_land,n_sample,cub_dir = './CUB',places_dir = './data_large'):
+def generate(r_water,r_land,n_sample,model_name='resnet50',cub_dir = './CUB',places_dir = './data_large'):
     #r_water: 水鸟在水环境的概率
     #r_land: 陆鸟在水环境的概率
+    #model_name: resnet50, resnet34, wideresnet50
     
     
 
@@ -62,11 +64,16 @@ def generate(r_water,r_land,n_sample,cub_dir = './CUB',places_dir = './data_larg
                 iswater=1
         if iswater==0:
             lb.append(species_name)
-
-    resnet50=models.resnet50(pretrained=True)
-    x=torch.zeros(n_sample,1000)
+    if model_name=='resnet50':
+        resnet=models.resnet50(pretrained=True)
+    elif model_name=='resnet34':
+        resnet=models.resnet34(pretrained=True)
+    elif model_name=='wideresnet50':
+        resnet=models.wide_resnet50_2(pretrained=True)
+    images=torch.zeros(n_sample,3,280,280)
     y=torch.zeros(n_sample)
     z=torch.zeros(n_sample)
+    transform=transforms.Compose([transforms.ToTensor()])
     for i in range(n_sample):
         # Load bird image and segmentation
         iswater = np.random.binomial(1,0.5,1)
@@ -94,14 +101,13 @@ def generate(r_water,r_land,n_sample,cub_dir = './CUB',places_dir = './data_larg
 
         img_black = Image.fromarray(np.around(img_np * seg_np).astype(np.uint8))
         combined_img = combine_and_mask(place, seg_np, img_black)
-        combined_img = torch.transpose(torch.tensor(combined_img,dtype=torch.float32),0,2)
-        combined_img= torch.unsqueeze(combined_img, dim=0)
-        feature=resnet50(combined_img)
+        combined_img = transform(combined_img.resize((280,280)))
         y[i]=iswater[0]  #0: land 1: water
         z[i]=background[0] #0: land 1:water
-        x[i]=feature
+        images[i]=combined_img
+    x=resnet(images)
     return x,y,z
 
 
 x0,y0,z0=generate(0.5,0.5,5)
-print(x0,y0)
+print(x0,y0,z0)
