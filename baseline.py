@@ -39,7 +39,6 @@ z_test=np.load(f'./res/test/rwater_0.05_rland_0.05_z.npy')
 pca = PCA(n_components=500)
 pincipal_componets_test = pca.fit_transform(x_test)
 
-print(x[2].shape)
 lassoy = Lasso(alpha=0.001,max_iter=1000)
 catx=np.concatenate((x[0],x[1]))
 caty=np.concatenate((y[0],y[1]))
