@@ -5,3 +5,4 @@ places download from http://data.csail.mit.edu/places/places365/train_large_plac
 fair.py: fair with pca  
 baseline.py: LASSO with pca  
 /res/variant.npy: overlap variant chosen by LASSO   
+fair_gumbel_one.py: I change some code when debugging  
