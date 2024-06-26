@@ -20,17 +20,24 @@ for i in range(len(r_water_list)):
     r_land=r_land_list[i]
     x_org=np.load(f'./res/train/rwater_{r_water}_rland_{r_land}_x.npy')
     #x_org=np.delete(x_org,tuple(d),axis=1)#删除LASSO选择的变量
-    pincipal_componets = pca.fit_transform(x_org)
-    x.append(pincipal_componets)
+    #pincipal_componets = pca.fit_transform(x_org)
+    #x.append(pincipal_componets)
+    x.append(x_org)
     y.append(np.load(f'./res/train/rwater_{r_water}_rland_{r_land}_y.npy'))
     z.append(np.load(f'./res/train/rwater_{r_water}_rland_{r_land}_z.npy'))
+x_cat = np.concatenate((x[0],x[1]))
+pincipal_componets = pca.fit_transform(x_cat)
+w = pca.components_
+x[0] = pincipal_componets[:50000]
+x[1] = pincipal_componets[50000:]
 x_test=np.load(f'./res/test/rwater_0.05_rland_0.05_x.npy')
 y_test=np.load(f'./res/test/rwater_0.05_rland_0.05_y.npy')
 z_test=np.load(f'./res/test/rwater_0.05_rland_0.05_z.npy')
+x_test= np.dot(x_test-np.mean(x_test,axis=0),w.T)
 #x_test=np.delete(x_test,tuple(d),axis=1)
-pincipal_componets1 = pca.fit_transform(x_test)
+#pincipal_componets1 = pca.fit_transform(x_test)
 
 
 #packs = fairnn_sgd_gumbel_uni(x, y,(x_test,y_test),hyper_gamma=1, learning_rate=1e-4, niters=10000,log=True)
 #packs = fairnn_sgd_gumbel_refit(x, y,mask,(x_test,y_test),log=True)
-packs = fair_ll_classification_sgd_gumbel_uni(x, y,(pincipal_componets1,y_test),hyper_gamma=40, learning_rate=1e-2,niters=50000,log=True,)
+packs = fair_ll_classification_sgd_gumbel_uni(x, y,(x_test,y_test),hyper_gamma=100, learning_rate=1e-2,niters=50000,log=True,)
